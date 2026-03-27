@@ -1,4 +1,4 @@
-‼️ Work in progress, not ready for production.
+‼️ This is a work in progress, waiting for user feedbacks to publish a first release.
 
 ⚠️ These encoders were generated based on the Coriolis processing chain dated 02/09/2026.
 
