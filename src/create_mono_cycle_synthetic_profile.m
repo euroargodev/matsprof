@@ -1,8 +1,3 @@
-I will now give you the exact Matlab implementation, one function after the other, can you first give the layout of the implementation ?
-
-
-Full Matlab code:
-
 % ------------------------------------------------------------------------------
 % This tool is a stand-alone version of the "nc_create_synthetic_profile" tool
 % used at the Coriolis GDAC to generate mono-cycle synthetic profile (S-PROF)
