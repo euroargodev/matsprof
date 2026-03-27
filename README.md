@@ -1,4 +1,6 @@
-⚠️ Work in progress, not ready for production.
+‼️ Work in progress, not ready for production.
+
+⚠️ These encoders were generated based on the Coriolis processing chain dated 02/09/2026.
 
 # Sprof generator in Matlab
 
