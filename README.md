@@ -1,10 +1,8 @@
-‼️ This is a work in progress, waiting for user feedbacks to publish a first release.
-
-⚠️ These encoders were generated based on the Coriolis processing chain dated 02/09/2026.
+⚠️ These encoders were generated using the Coriolis processing chain and version 1.24 (version 03.09.2026) for ARGO_simplified_profile.
 
 # Sprof generator in Matlab
 
-For Python implementation, checkout this repository: https://github.com/euroargodev/pysprof
+For a Python implementation, checkout this repository: https://github.com/euroargodev/pysprof
 
 ## Mono-cycle files
 
