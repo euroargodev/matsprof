@@ -30,6 +30,8 @@
 % RELEASES :
 %   02/09/2026 - RNU - V 1.20: creation (from the current version of the
 %                              Coriolis tool).
+%   09/04/2026 - RNU - V 1.23: includes version 03.09.2026 of ARGO_simplified_profile
+%   11/24/2026 - RNU - V 1.24: new strategy for NetCDF-4 generation
 % ------------------------------------------------------------------------------
 function create_multi_cycle_synthetic_profile(varargin)
 
@@ -40,7 +42,7 @@ global g_cocs_multi_sa_outputDirName;
 
 % program version
 global g_cocs_multi_sa_createMultiCycleSyntheticProfileVersion;
-g_cocs_multi_sa_createMultiCycleSyntheticProfileVersion = '1.20 (version 12.05.2025 for ARGO_simplified_profile)';
+g_cocs_multi_sa_createMultiCycleSyntheticProfileVersion = '1.24 (version 03.09.2026 for ARGO_simplified_profile)';
 
 % start date of the run
 global g_cocs_multi_sa_currentDate;
@@ -789,82 +791,68 @@ try
 
    % create misc variables
    dataTypeVarId = netcdf.defVar(fCdf, 'DATA_TYPE', 'NC_CHAR', string32DimId);
-   netcdf.defVarDeflate(fCdf, dataTypeVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, dataTypeVarId, 'long_name', 'Data type');
    netcdf.putAtt(fCdf, dataTypeVarId, 'conventions', 'Argo reference table 1');
    netcdf.defVarFill(fCdf, dataTypeVarId, false, ' ');
 
    formatVersionVarId = netcdf.defVar(fCdf, 'FORMAT_VERSION', 'NC_CHAR', string4DimId);
-   netcdf.defVarDeflate(fCdf, formatVersionVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, formatVersionVarId, 'long_name', 'File format version');
    netcdf.defVarFill(fCdf, formatVersionVarId, false, ' ');
 
    handbookVersionVarId = netcdf.defVar(fCdf, 'HANDBOOK_VERSION', 'NC_CHAR', string4DimId);
-   netcdf.defVarDeflate(fCdf, handbookVersionVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, handbookVersionVarId, 'long_name', 'Data handbook version');
    netcdf.defVarFill(fCdf, handbookVersionVarId, false, ' ');
 
    referenceDateTimeVarId = netcdf.defVar(fCdf, 'REFERENCE_DATE_TIME', 'NC_CHAR', dateTimeDimId);
-   netcdf.defVarDeflate(fCdf, referenceDateTimeVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, referenceDateTimeVarId, 'long_name', 'Date of reference for Julian days');
    netcdf.putAtt(fCdf, referenceDateTimeVarId, 'conventions', 'YYYYMMDDHHMISS');
    netcdf.defVarFill(fCdf, referenceDateTimeVarId, false, ' ');
 
    dateCreationVarId = netcdf.defVar(fCdf, 'DATE_CREATION', 'NC_CHAR', dateTimeDimId);
-   netcdf.defVarDeflate(fCdf, dateCreationVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, dateCreationVarId, 'long_name', 'Date of file creation');
    netcdf.putAtt(fCdf, dateCreationVarId, 'conventions', 'YYYYMMDDHHMISS');
    netcdf.defVarFill(fCdf, dateCreationVarId, false, ' ');
 
    dateUpdateVarId = netcdf.defVar(fCdf, 'DATE_UPDATE', 'NC_CHAR', dateTimeDimId);
-   netcdf.defVarDeflate(fCdf, dateUpdateVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, dateUpdateVarId, 'long_name', 'Date of update of this file');
    netcdf.putAtt(fCdf, dateUpdateVarId, 'conventions', 'YYYYMMDDHHMISS');
    netcdf.defVarFill(fCdf, dateUpdateVarId, false, ' ');
 
    % create profile variables
    platformNumberVarId = netcdf.defVar(fCdf, 'PLATFORM_NUMBER', 'NC_CHAR', fliplr([nProfDimId string8DimId]));
-   netcdf.defVarDeflate(fCdf, platformNumberVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, platformNumberVarId, 'long_name', 'Float unique identifier');
    netcdf.putAtt(fCdf, platformNumberVarId, 'conventions', 'WMO float identifier : A9IIIII');
    netcdf.defVarFill(fCdf, platformNumberVarId, false, ' ');
 
    projectNameVarId = netcdf.defVar(fCdf, 'PROJECT_NAME', 'NC_CHAR', fliplr([nProfDimId string64DimId]));
-   netcdf.defVarDeflate(fCdf, projectNameVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, projectNameVarId, 'long_name', 'Name of the project');
    netcdf.defVarFill(fCdf, projectNameVarId, false, ' ');
 
    piNameVarId = netcdf.defVar(fCdf, 'PI_NAME', 'NC_CHAR', fliplr([nProfDimId string64DimId]));
-   netcdf.defVarDeflate(fCdf, piNameVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, piNameVarId, 'long_name', 'Name of the principal investigator');
    netcdf.defVarFill(fCdf, piNameVarId, false, ' ');
 
    stationParametersVarId = netcdf.defVar(fCdf, 'STATION_PARAMETERS', 'NC_CHAR', fliplr([nProfDimId nParamDimId string64DimId]));
-   netcdf.defVarDeflate(fCdf, stationParametersVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, stationParametersVarId, 'long_name', 'List of available parameters for the station');
    netcdf.putAtt(fCdf, stationParametersVarId, 'conventions', 'Argo reference table 3');
    netcdf.defVarFill(fCdf, stationParametersVarId, false, ' ');
 
    cycleNumberVarId = netcdf.defVar(fCdf, 'CYCLE_NUMBER', 'NC_INT', nProfDimId);
-   netcdf.defVarDeflate(fCdf, cycleNumberVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, cycleNumberVarId, 'long_name', 'Float cycle number');
    netcdf.putAtt(fCdf, cycleNumberVarId, 'conventions', '0...N, 0 : launch cycle (if exists), 1 : first complete cycle');
    netcdf.defVarFill(fCdf, cycleNumberVarId, false, int32(99999));
 
    directionVarId = netcdf.defVar(fCdf, 'DIRECTION', 'NC_CHAR', nProfDimId);
-   netcdf.defVarDeflate(fCdf, directionVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, directionVarId, 'long_name', 'Direction of the station profiles');
    netcdf.putAtt(fCdf, directionVarId, 'conventions', 'A: ascending profiles, D: descending profiles');
    netcdf.defVarFill(fCdf, directionVarId, false, ' ');
 
    dataCenterVarId = netcdf.defVar(fCdf, 'DATA_CENTRE', 'NC_CHAR', fliplr([nProfDimId string2DimId]));
-   netcdf.defVarDeflate(fCdf, dataCenterVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, dataCenterVarId, 'long_name', 'Data centre in charge of float data processing');
    netcdf.putAtt(fCdf, dataCenterVarId, 'conventions', 'Argo reference table 4');
    netcdf.defVarFill(fCdf, dataCenterVarId, false, ' ');
 
    parameterDataModeVarId = netcdf.defVar(fCdf, 'PARAMETER_DATA_MODE', 'NC_CHAR', fliplr([nProfDimId nParamDimId]));
-   netcdf.defVarDeflate(fCdf, parameterDataModeVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, parameterDataModeVarId, 'long_name', 'Delayed mode or real time data');
    netcdf.putAtt(fCdf, parameterDataModeVarId, 'conventions', 'R : real time; D : delayed mode; A : real time with adjustment');
    netcdf.defVarFill(fCdf, parameterDataModeVarId, false, ' ');
@@ -875,23 +863,19 @@ try
    netcdf.defVarFill(fCdf, platformTypeVarId, false, ' ');
 
    floatSerialNoVarId = netcdf.defVar(fCdf, 'FLOAT_SERIAL_NO', 'NC_CHAR', fliplr([nProfDimId string32DimId]));
-   netcdf.defVarDeflate(fCdf, floatSerialNoVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, floatSerialNoVarId, 'long_name', 'Serial number of the float');
    netcdf.defVarFill(fCdf, floatSerialNoVarId, false, ' ');
 
    firmwareVersionVarId = netcdf.defVar(fCdf, 'FIRMWARE_VERSION', 'NC_CHAR', fliplr([nProfDimId string32DimId]));
-   netcdf.defVarDeflate(fCdf, firmwareVersionVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, firmwareVersionVarId, 'long_name', 'Instrument firmware version');
    netcdf.defVarFill(fCdf, firmwareVersionVarId, false, ' ');
 
    wmoInstTypeVarId = netcdf.defVar(fCdf, 'WMO_INST_TYPE', 'NC_CHAR', fliplr([nProfDimId string4DimId]));
-   netcdf.defVarDeflate(fCdf, wmoInstTypeVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, wmoInstTypeVarId, 'long_name', 'Coded instrument type');
    netcdf.putAtt(fCdf, wmoInstTypeVarId, 'conventions', 'Argo reference table 8');
    netcdf.defVarFill(fCdf, wmoInstTypeVarId, false, ' ');
 
    juldVarId = netcdf.defVar(fCdf, 'JULD', 'NC_DOUBLE', nProfDimId);
-   netcdf.defVarDeflate(fCdf, juldVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, juldVarId, 'long_name', 'Julian day (UTC) of the station relative to REFERENCE_DATE_TIME');
    netcdf.putAtt(fCdf, juldVarId, 'standard_name', 'time');
    netcdf.putAtt(fCdf, juldVarId, 'units', 'days since 1950-01-01 00:00:00 UTC');
@@ -901,13 +885,11 @@ try
    netcdf.putAtt(fCdf, juldVarId, 'axis', 'T');
 
    juldQcVarId = netcdf.defVar(fCdf, 'JULD_QC', 'NC_CHAR', nProfDimId);
-   netcdf.defVarDeflate(fCdf, juldQcVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, juldQcVarId, 'long_name', 'Quality on date and time');
    netcdf.putAtt(fCdf, juldQcVarId, 'conventions', 'Argo reference table 2');
    netcdf.defVarFill(fCdf, juldQcVarId, false, ' ');
 
    juldLocationVarId = netcdf.defVar(fCdf, 'JULD_LOCATION', 'NC_DOUBLE', nProfDimId);
-   netcdf.defVarDeflate(fCdf, juldLocationVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, juldLocationVarId, 'long_name', 'Julian day (UTC) of the location relative to REFERENCE_DATE_TIME');
    netcdf.putAtt(fCdf, juldLocationVarId, 'units', 'days since 1950-01-01 00:00:00 UTC');
    netcdf.putAtt(fCdf, juldLocationVarId, 'conventions', 'Relative julian days with decimal part (as parts of day)');
@@ -916,7 +898,6 @@ try
    netcdf.defVarFill(fCdf, juldLocationVarId, false, double(999999));
 
    latitudeVarId = netcdf.defVar(fCdf, 'LATITUDE', 'NC_DOUBLE', nProfDimId);
-   netcdf.defVarDeflate(fCdf, latitudeVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, latitudeVarId, 'long_name', 'Latitude of the station, best estimate');
    netcdf.putAtt(fCdf, latitudeVarId, 'standard_name', 'latitude');
    netcdf.putAtt(fCdf, latitudeVarId, 'units', 'degree_north');
@@ -926,7 +907,6 @@ try
    netcdf.putAtt(fCdf, latitudeVarId, 'axis', 'Y');
 
    longitudeVarId = netcdf.defVar(fCdf, 'LONGITUDE', 'NC_DOUBLE', nProfDimId);
-   netcdf.defVarDeflate(fCdf, longitudeVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, longitudeVarId, 'long_name', 'Longitude of the station, best estimate');
    netcdf.putAtt(fCdf, longitudeVarId, 'standard_name', 'longitude');
    netcdf.putAtt(fCdf, longitudeVarId, 'units', 'degree_east');
@@ -936,46 +916,38 @@ try
    netcdf.putAtt(fCdf, longitudeVarId, 'axis', 'X');
 
    positionQcVarId = netcdf.defVar(fCdf, 'POSITION_QC', 'NC_CHAR', nProfDimId);
-   netcdf.defVarDeflate(fCdf, positionQcVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, positionQcVarId, 'long_name', 'Quality on position (latitude and longitude)');
    netcdf.putAtt(fCdf, positionQcVarId, 'conventions', 'Argo reference table 2');
    netcdf.defVarFill(fCdf, positionQcVarId, false, ' ');
 
    positioningSystemVarId = netcdf.defVar(fCdf, 'POSITIONING_SYSTEM', 'NC_CHAR', fliplr([nProfDimId string8DimId]));
-   netcdf.defVarDeflate(fCdf, positioningSystemVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, positioningSystemVarId, 'long_name', 'Positioning system');
    netcdf.defVarFill(fCdf, positioningSystemVarId, false, ' ');
 
    configMissionNumberVarId = netcdf.defVar(fCdf, 'CONFIG_MISSION_NUMBER', 'NC_INT', nProfDimId);
-   netcdf.defVarDeflate(fCdf, configMissionNumberVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, configMissionNumberVarId, 'long_name', 'Unique number denoting the missions performed by the float');
    netcdf.putAtt(fCdf, configMissionNumberVarId, 'conventions', '1...N, 1 : first complete mission');
    netcdf.defVarFill(fCdf, configMissionNumberVarId, false, int32(99999));
 
    % calibration information
    parameterVarId = netcdf.defVar(fCdf, 'PARAMETER', 'NC_CHAR', fliplr([nProfDimId nCalibDimId nParamDimId string64DimId]));
-   netcdf.defVarDeflate(fCdf, parameterVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, parameterVarId, 'long_name', 'List of parameters with calibration information');
    netcdf.putAtt(fCdf, parameterVarId, 'conventions', 'Argo reference table 3');
    netcdf.defVarFill(fCdf, parameterVarId, false, ' ');
 
    scientificCalibEquationVarId = netcdf.defVar(fCdf, 'SCIENTIFIC_CALIB_EQUATION', 'NC_CHAR', fliplr([nProfDimId nCalibDimId nParamDimId string256DimId]));
-   netcdf.defVarDeflate(fCdf, scientificCalibEquationVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, scientificCalibEquationVarId, 'long_name', 'Calibration equation for this parameter');
    netcdf.defVarFill(fCdf, scientificCalibEquationVarId, false, ' ');
 
    scientificCalibCoefficientVarId = netcdf.defVar(fCdf, 'SCIENTIFIC_CALIB_COEFFICIENT', 'NC_CHAR', fliplr([nProfDimId nCalibDimId nParamDimId string256DimId]));
-   netcdf.defVarDeflate(fCdf, scientificCalibCoefficientVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, scientificCalibCoefficientVarId, 'long_name', 'Calibration coefficients for this equation');
    netcdf.defVarFill(fCdf, scientificCalibCoefficientVarId, false, ' ');
 
    scientificCalibCommentVarId = netcdf.defVar(fCdf, 'SCIENTIFIC_CALIB_COMMENT', 'NC_CHAR', fliplr([nProfDimId nCalibDimId nParamDimId string256DimId]));
-   netcdf.defVarDeflate(fCdf, scientificCalibCommentVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, scientificCalibCommentVarId, 'long_name', 'Comment applying to this parameter calibration');
    netcdf.defVarFill(fCdf, scientificCalibCommentVarId, false, ' ');
 
    scientificCalibDateVarId = netcdf.defVar(fCdf, 'SCIENTIFIC_CALIB_DATE', 'NC_CHAR', fliplr([nProfDimId nCalibDimId nParamDimId dateTimeDimId]));
-   netcdf.defVarDeflate(fCdf, scientificCalibDateVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
    netcdf.putAtt(fCdf, scientificCalibDateVarId, 'long_name', 'Date of calibration');
    netcdf.putAtt(fCdf, scientificCalibDateVarId, 'conventions', 'YYYYMMDDHHMISS');
    netcdf.defVarFill(fCdf, scientificCalibDateVarId, false, ' ');
@@ -994,7 +966,6 @@ try
 
          if (~var_is_present_dec_argo(fCdf, profParamQcName))
             profileParamQcVarId = netcdf.defVar(fCdf, profParamQcName, 'NC_CHAR', nProfDimId);
-            netcdf.defVarDeflate(fCdf, profileParamQcVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
 
             netcdf.putAtt(fCdf, profileParamQcVarId, 'long_name', sprintf('Global quality flag of %s profile', paramName));
             netcdf.putAtt(fCdf, profileParamQcVarId, 'conventions', 'Argo reference table 2a');
@@ -1012,7 +983,6 @@ try
          if (~var_is_present_dec_argo(fCdf, paramName))
 
             paramVarId = netcdf.defVar(fCdf, paramName, paramInfo.paramNcType, fliplr([nProfDimId nLevelsDimId]));
-            netcdf.defVarDeflate(fCdf, paramVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
 
             if (~isempty(paramInfo.longName))
                netcdf.putAtt(fCdf, paramVarId, 'long_name', paramInfo.longName);
@@ -1051,7 +1021,6 @@ try
          if (~var_is_present_dec_argo(fCdf, paramQcName))
 
             paramQcVarId = netcdf.defVar(fCdf, paramQcName, 'NC_CHAR', fliplr([nProfDimId nLevelsDimId]));
-            netcdf.defVarDeflate(fCdf, paramQcVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
 
             netcdf.putAtt(fCdf, paramQcVarId, 'long_name', 'quality flag');
             netcdf.putAtt(fCdf, paramQcVarId, 'conventions', 'Argo reference table 2');
@@ -1081,7 +1050,6 @@ try
          if (~var_is_present_dec_argo(fCdf, paramAdjName))
 
             paramAdjVarId = netcdf.defVar(fCdf, paramAdjName, paramInfo.paramNcType, fliplr([nProfDimId nLevelsDimId]));
-            netcdf.defVarDeflate(fCdf, paramAdjVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
 
             if (~isempty(paramInfo.longName))
                netcdf.putAtt(fCdf, paramAdjVarId, 'long_name', paramInfo.longName);
@@ -1120,7 +1088,6 @@ try
          if (~var_is_present_dec_argo(fCdf, paramAdjQcName))
 
             paramAdjQcVarId = netcdf.defVar(fCdf, paramAdjQcName, 'NC_CHAR', fliplr([nProfDimId nLevelsDimId]));
-            netcdf.defVarDeflate(fCdf, paramAdjQcVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
 
             netcdf.putAtt(fCdf, paramAdjQcVarId, 'long_name', 'quality flag');
             netcdf.putAtt(fCdf, paramAdjQcVarId, 'conventions', 'Argo reference table 2');
@@ -1132,7 +1099,6 @@ try
          if (~var_is_present_dec_argo(fCdf, paramAdjErrName))
 
             paramAdjErrVarId = netcdf.defVar(fCdf, paramAdjErrName, paramInfo.paramNcType, fliplr([nProfDimId nLevelsDimId]));
-            netcdf.defVarDeflate(fCdf, paramAdjErrVarId, SHUFFLE_FLAG, true, DEFLATE_LEVEL);
 
             netcdf.putAtt(fCdf, paramAdjErrVarId, 'long_name', g_decArgo_longNameOfParamAdjErr);
             if (~isempty(paramInfo.fillValue))
@@ -1153,6 +1119,14 @@ try
          end
       end
    end
+
+   % list of dimensions to deflate
+   deflateDimIdList = [nProfDimId nParamDimId nLevelsDimId nCalibDimId];
+
+   % assign a deflate function to the variables indexed by dimensions of the
+   % deflateDimList
+   fCdf = set_deflate_to_vars(fCdf, deflateDimIdList, ...
+      DEFLATE_LEVEL, nan, outputFilePathName);
 
    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
    % DEFINE MODE END
@@ -1489,7 +1463,7 @@ global g_decArgo_netCDF4FlagForTechAux;
 global g_decArgo_netCDF4FlagForMetaAux;
 
 % deflate level to use (0 to 9)
-% a deflate level of 1 is recomended in "EXPERIENCE WITH AN ENHANCED NETCDF DATA
+% a deflate level of 1 is recommended in "EXPERIENCE WITH AN ENHANCED NETCDF DATA
 % MODEL AND INTERFACE FOR SCIENTIFIC DATA ACCESS" where we can read "In our
 % tests we notice that setting the deflate higher than one takes more time, but
 % has little benefit."
@@ -1949,7 +1923,7 @@ g_decArgo_decoderIdListNkeArgos = [1, 3, 4, 11, 12, 17, 19, 24, 25, 27:32];
 g_decArgo_decoderIdListNkeIridiumRbr = [224, 226, 227, 228, 229];
 g_decArgo_decoderIdListNkeIridiumDeep = [201, 202, 203, 215, 216, 218, 221, 228, 229, 230, 403];
 g_decArgo_decoderIdListNkeIridiumNotDeep = setdiff(201:232, g_decArgo_decoderIdListNkeIridiumDeep);
-g_decArgo_decoderIdListNkePfv2IridiumSbd = [401:402];
+g_decArgo_decoderIdListNkePfv2IridiumSbd = [401:402, 404];
 g_decArgo_decoderIdListNkePfv2IridiumRudics = [403];
 g_decArgo_decoderIdListNkePfv2Iridium = [ ...
    g_decArgo_decoderIdListNkePfv2IridiumSbd ...
@@ -2258,12 +2232,11 @@ g_decArgo_paramWithExtraDimList = [ ...
    {'NB_SIZE_SPECTRA_PARTICLES_PER_IMAGE'} ...
    {'GREY_SIZE_SPECTRA_PARTICLES'} ...
    {'BLACK_NB_SIZE_SPECTRA_PARTICLES'} ...
-   {'RAW_DOWNWELLING_IRRADIANCE'} ...
+   {'RAW_DOWNWELLING_IRRADIANCE_SPECTRUM'} ...
    {'DOWN_IRRADIANCE_SPECTRUM'} ...
    {'DOWN_IRRADIANCE_SPECTRUM_WAVELENGTHS'} ...
    {'RAW_UPWELLING_RADIANCE'} ...
    {'UP_RADIANCE_SPECTRUM'} ...
-   {'UP_RADIANCE_SPECTRUM_WAVELENGTHS'} ...
    {'INDEX_CATEGORY'} ...
    {'ECOTAXA_CATEGORY_ID'} ...
    {'NB_OBJECT_CATEGORY'} ...
@@ -2323,7 +2296,7 @@ g_decArgo_netCDF4FlagForTechAux = 1;
 g_decArgo_netCDF4FlagForMetaAux = 1;
 
 % deflate level to use (0 to 9)
-% a deflate level of 1 is recomended in "EXPERIENCE WITH AN ENHANCED NETCDF DATA
+% a deflate level of 1 is recommended in "EXPERIENCE WITH AN ENHANCED NETCDF DATA
 % MODEL AND INTERFACE FOR SCIENTIFIC DATA ACCESS" where we can read "In our
 % tests we notice that setting the deflate higher than one takes more time, but
 % has little benefit."
@@ -7050,8 +7023,8 @@ while (again ~= 0)
 
          % RAMSES AND RAMSES V2 PARAMETERS - START (all in PROF_AUX)
 
-      case 'RAW_DOWNWELLING_IRRADIANCE'
-         o_attributeStruct = struct('name', 'RAW_DOWNWELLING_IRRADIANCE', ...
+      case 'RAW_DOWNWELLING_IRRADIANCE_SPECTRUM'
+         o_attributeStruct = struct('name', 'RAW_DOWNWELLING_IRRADIANCE_SPECTRUM', ...
             'longName', 'Raw downwelling irradiance spectrum', ...
             'standardName', '', ...
             'fillValue', double(netcdf.getConstant('NC_FILL_DOUBLE')), ...
@@ -7068,7 +7041,7 @@ while (again ~= 0)
 
       case 'DOWN_IRRADIANCE_SPECTRUM'
          o_attributeStruct = struct('name', 'DOWN_IRRADIANCE_SPECTRUM', ...
-            'longName', 'Downwelling irradiance spectrum', ...
+            'longName', 'Downwelling plane irradiance as energy of electromagnetic radiation in the water body', ...
             'standardName', '', ...
             'fillValue', single(99999), ...
             'units', 'W/m^2/nm', ...
@@ -7130,9 +7103,9 @@ while (again ~= 0)
             'paramNcType', 'NC_FLOAT', ...
             'adjAllowed', 0);
 
-      case 'RADIOMETER_DOWN_IRR_PRE_PRES'
-         o_attributeStruct = struct('name', 'RADIOMETER_DOWN_IRR_PRE_PRES', ...
-            'longName', '', ...
+      case 'RADIOMETER_DOWN_IRR_BEFORE_PRES'
+         o_attributeStruct = struct('name', 'RADIOMETER_DOWN_IRR_BEFORE_PRES', ...
+            'longName', 'Absolute pressure reported by the pressure sensor of the radiometer before the measurement', ...
             'standardName', '', ...
             'fillValue', single(99999), ...
             'units', 'decibar', ...
@@ -7162,9 +7135,9 @@ while (again ~= 0)
             'paramNcType', 'NC_FLOAT', ...
             'adjAllowed', 0);
 
-      case 'RADIOMETER_DOWN_IRR_POST_PRES'
-         o_attributeStruct = struct('name', 'RADIOMETER_DOWN_IRR_POST_PRES', ...
-            'longName', '', ...
+      case 'RADIOMETER_DOWN_IRR_AFTER_PRES'
+         o_attributeStruct = struct('name', 'RADIOMETER_DOWN_IRR_AFTER_PRES', ...
+            'longName', 'Absolute pressure reported by the pressure sensor of the radiometer after the measurement', ...
             'standardName', '', ...
             'fillValue', single(99999), ...
             'units', 'decibar', ...
@@ -7196,7 +7169,7 @@ while (again ~= 0)
 
       case 'RADIOMETER_DOWN_IRR_TEMP'
          o_attributeStruct = struct('name', 'RADIOMETER_DOWN_IRR_TEMP', ...
-            'longName', 'The temperature during the last measurement in degree_Celsius as taken from the pressure sensor', ...
+            'longName', 'Temperature of the sensor', ...
             'standardName', '', ...
             'fillValue', single(99999), ...
             'units', 'degree_Celsius', ...
@@ -7226,9 +7199,9 @@ while (again ~= 0)
             'paramNcType', 'NC_FLOAT', ...
             'adjAllowed', 0);
 
-      case 'RADIOMETER_DOWN_IRR_PRE_INCLINATION'
-         o_attributeStruct = struct('name', 'RADIOMETER_DOWN_IRR_PRE_INCLINATION', ...
-            'longName', 'The inclination angle (0-360) taken before the light measurement', ...
+      case 'RADIOMETER_DOWN_IRR_BEFORE_INCLINATION'
+         o_attributeStruct = struct('name', 'RADIOMETER_DOWN_IRR_BEFORE_INCLINATION', ...
+            'longName', 'Inclination angle (0-360) of the radiometer before the measurement', ...
             'standardName', '', ...
             'fillValue', single(99999), ...
             'units', 'degree', ...
@@ -7258,9 +7231,9 @@ while (again ~= 0)
             'paramNcType', 'NC_FLOAT', ...
             'adjAllowed', 0);
 
-      case 'RADIOMETER_DOWN_IRR_POST_INCLINATION'
-         o_attributeStruct = struct('name', 'RADIOMETER_DOWN_IRR_POST_INCLINATION', ...
-            'longName', 'The inclination angle (0-360) taken after the light measurement', ...
+      case 'RADIOMETER_DOWN_IRR_AFTER_INCLINATION'
+         o_attributeStruct = struct('name', 'RADIOMETER_DOWN_IRR_AFTER_INCLINATION', ...
+            'longName', 'Inclination angle (0-360) of the radiometer after the measurement', ...
             'standardName', '', ...
             'fillValue', single(99999), ...
             'units', 'degree', ...
@@ -7290,18 +7263,18 @@ while (again ~= 0)
             'paramNcType', 'NC_FLOAT', ...
             'adjAllowed', 0);
 
-      case 'RADIOMETER_DOWN_IRR_TIMESTAMPOFFSET'
-         o_attributeStruct = struct('name', 'RADIOMETER_DOWN_IRR_TIMESTAMPOFFSET', ...
-            'longName', 'Time elapsed in seconds between the end of the radiometric acquisition and the time stamp of the float', ...
+      case 'RADIOMETER_DOWN_IRR_TIME_OFFSET'
+         o_attributeStruct = struct('name', 'RADIOMETER_DOWN_IRR_TIME_OFFSET', ...
+            'longName', 'Fractional day elapsed between the end of light measurement by the radiometer and the time recorded for the individual measurement', ...
             'standardName', '', ...
             'fillValue', single(99999), ...
-            'units', 'sec', ...
+            'units', 'days', ...
             'validMin', single(0), ...
-            'validMax', single(63.75), ...
+            'validMax', single(0.0007378473), ...
             'axis', '', ...
-            'cFormat', '%.2f', ...
-            'fortranFormat', 'F.2', ...
-            'resolution', single(0.25), ...
+            'cFormat', '%.10f', ...
+            'fortranFormat', 'F.10', ...
+            'resolution', single(0.00000289352), ...
             'paramType', 'i', ...
             'paramNcType', 'NC_FLOAT', ...
             'adjAllowed', 0);
@@ -7324,7 +7297,7 @@ while (again ~= 0)
 
       case 'RADIOMETER_DOWN_IRR_DARK_AVERAGE'
          o_attributeStruct = struct('name', 'RADIOMETER_DOWN_IRR_DARK_AVERAGE', ...
-            'longName', '', ...
+            'longName', 'Value average over dark pixels of the radiometer', ...
             'standardName', '', ...
             'fillValue', single(99999), ...
             'units', 'count', ...
@@ -8189,6 +8162,91 @@ if (length(find((a_qcFlags == g_decArgo_qcStrDef) | ...
       o_profQc = 'B';
    else
       o_profQc = 'A';
+   end
+end
+
+return
+
+% ------------------------------------------------------------------------------
+% Assign a deflate function to the variables indexed by dimensions of the
+% provided list.
+%
+% SYNTAX :
+% [o_ncFileId] = set_deflate_to_vars(a_ncFileId, a_deflateDimIdList, ...
+%   a_deflateLevel, a_defaultChunkSize, a_ncFilePathName)
+%
+% INPUT PARAMETERS :
+%   a_ncFileId         : input NetCDF file Id
+%   a_deflateDimIdList : list of dimension Ids to deflate
+%   a_deflateLevel     : deflate level to use
+%   a_defaultChunkSize : default chunk size
+%   a_ncFilePathName   : concerned NetCDF file path name
+%
+% OUTPUT PARAMETERS :
+%   o_ncFileId : input NetCDF file Id
+%
+% EXAMPLES :
+%
+% SEE ALSO :
+% AUTHOR : Jean-Philippe Rannou (Capgemini) (jean.philippe.rannou@partenaire-exterieur.ifremer.fr)
+% ------------------------------------------------------------------------------
+% RELEASES :
+%   10/26/2026 - RNU - creation
+% ------------------------------------------------------------------------------
+function [o_ncFileId] = set_deflate_to_vars(a_ncFileId, a_deflateDimIdList, ...
+   a_deflateLevel, a_defaultChunkSize, a_ncFilePathName)
+
+o_ncFileId = a_ncFileId;
+
+% shuffle flag
+SHUFFLE_FLAG = true;
+
+[~, nbVars, ~, ~] = netcdf.inq(o_ncFileId);
+for idVar = 0:nbVars-1
+   [~, varType, dimIds, ~] = netcdf.inqVar(o_ncFileId, idVar);
+   if (~isempty(intersect(a_deflateDimIdList, dimIds)))
+      [~, deflate, ~] = netcdf.inqVarDeflate(o_ncFileId, idVar);
+      if (~deflate)
+         netcdf.defVarDeflate(o_ncFileId, idVar, SHUFFLE_FLAG, true, a_deflateLevel);
+
+         if (~isnan(a_defaultChunkSize))
+            % when multiple dimension with an UNLIMITED one
+            % we will define the chunk size to use for the UNLIMITED
+            % dimension (the default chunking strategy set it to 1
+            % which is not efficient while writing the data).
+            unlimDimIds = netcdf.inqUnlimDims(o_ncFileId);
+            if (~isempty(intersect(unlimDimIds, dimIds)))
+               if (length(dimIds) > 1)
+                  if (isscalar(unlimDimIds))
+
+                     % create list of limited dimensions size
+                     varDimAll = nan(size(dimIds));
+                     for idDim = 1:length(dimIds)
+                        [~, dimlen] = netcdf.inqDim(o_ncFileId, dimIds(idDim));
+                        varDimAll(idDim) = dimlen;
+                     end
+                     idF = find(dimIds == unlimDimIds);
+                     varDimLimited = varDimAll;
+                     varDimLimited(idF) = [];
+
+                     % data size without unlimited dimension
+                     varTypeSize = get_size_from_data_type(get_data_type_from_id(varType));
+                     varSizeLimited = prod(varDimLimited)*varTypeSize;
+
+                     % compute the chunk size to set to the UNLIMITED dimension
+                     expo = floor(log2(a_defaultChunkSize*1024*1024/varSizeLimited));
+                     chunkSize = 2^expo;
+                     varDimChunkSize = varDimAll;
+                     varDimChunkSize(idF) = chunkSize;
+                     netcdf.defVarChunking(o_ncFileId, idVar, "CHUNKED", varDimChunkSize);
+
+                  else
+                     fprintf('ERROR: More than one UNLIMITED dimension in output file: %s\n', a_ncFilePathName);
+                  end
+               end
+            end
+         end
+      end
    end
 end
 
